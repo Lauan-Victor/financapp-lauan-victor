@@ -1,5 +1,35 @@
 let usuarioLogado = null;
 
+async function loginUsuario(usuario, senha) {
+    return await fazerLogin(usuario, senha);
+}
+
+function setAuthMode(mode) {
+    const cadastroCard = document.getElementById('cadastroCard');
+    const loginCard = document.getElementById('loginCard');
+    const toggleButton = document.getElementById('toggleAuthMode');
+
+    if (!cadastroCard || !loginCard || !toggleButton) {
+        return;
+    }
+
+    const isCadastro = mode === 'cadastro';
+    cadastroCard.classList.toggle('is-active', isCadastro);
+    cadastroCard.classList.toggle('hidden', !isCadastro);
+    loginCard.classList.toggle('is-active', !isCadastro);
+    loginCard.classList.toggle('hidden', isCadastro);
+    toggleButton.textContent = isCadastro ? 'Já tenho uma conta' : 'Quero me cadastrar';
+}
+
+document.getElementById('toggleAuthMode').addEventListener('click', function () {
+    const cadastroCard = document.getElementById('cadastroCard');
+    const loginCard = document.getElementById('loginCard');
+    const shouldGoToCadastro = !cadastroCard.classList.contains('is-active');
+    setAuthMode(shouldGoToCadastro ? 'cadastro' : 'login');
+});
+
+setAuthMode('login');
+
 document.getElementById('formCadastro').addEventListener('submit', async function (e) {
     e.preventDefault();
 
@@ -33,12 +63,16 @@ document.getElementById('formLogin').addEventListener('submit', async function (
 
     const resultado = await loginUsuario(usuario, senha);
     if (resultado.error) {
-        msg.textContent = 'Usuário ou senha incorretos.';
+        msg.textContent = 'falha ao realizar o login';
+        alert('falha ao realizar o login');
         return;
     }
 
     usuarioLogado = resultado.data;
     sessionStorage.setItem('financappUsuario', JSON.stringify(usuarioLogado));
+
+    msg.textContent = 'login realizado com sucesso';
+    alert('login realizado com sucesso');
 
     document.getElementById('telaAuth').hidden = true;
     document.getElementById('telaApp').hidden = false;
@@ -62,6 +96,7 @@ document.getElementById('btnSair').addEventListener('click', function () {
     document.getElementById('telaAuth').hidden = false;
     document.getElementById('telaApp').hidden = true;
     document.getElementById('btnSair').hidden = true;
+    setAuthMode('login');
 });
 
 const usuarioSalvo = sessionStorage.getItem('financappUsuario');

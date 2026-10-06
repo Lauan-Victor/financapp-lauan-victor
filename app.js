@@ -6,7 +6,7 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabasekey);
 async function cadastrarUsuario(nome, turma, usuario, senha) {
     const { data, error } = await supabaseClient
         .from('usuarios')
-        .insert([{ nome: nome, turma: turma, usuario: usuario, senha: senha}])
+        .insert([{ nome: nome, turma: turma, usuario: usuario, senha: senha }])
         .select();
 
     if (error) {
@@ -64,16 +64,19 @@ async function carregarLancamentos(autorId) {
 
     if (error) {
         console.error(error);
-        return { data: [], error: error};
+        return { data: [], error: error };
     }
 
-        const lancamentos = data.map(function (lancamento) {
+    const lancamentos = (data || []).map(function (lancamento) {
         const tags = (lancamento.lancamento_tags || []).map(function (it) {
             return it.tags?.nome ?? '';
         });
-    
+
         return Object.assign({}, lancamento, { tags: tags });
     });
+
+    return { data: lancamentos, error: null };
+}
 
 async function adicionarTag(lancamentoId, nomeTag) {
     const nome = nomeTag.trim().toLowerCase();
@@ -92,6 +95,7 @@ async function adicionarTag(lancamentoId, nomeTag) {
         console.error(busca.error);
         return { data: null, error: busca.error };
     }
+
     tag = busca.data;
 
     if (!tag) {
@@ -101,12 +105,13 @@ async function adicionarTag(lancamentoId, nomeTag) {
             .select()
             .single();
 
-    if (criacao.error) {
-        console.error(criacao.error);
-        return { data: null, error: criacao.error };
+        if (criacao.error) {
+            console.error(criacao.error);
+            return { data: null, error: criacao.error };
+        }
+
+        tag = criacao.data;
     }
-    tag = criacao.data;
- }
 
     const { data, error } = await supabaseClient
         .from('lancamento_tags')
@@ -118,14 +123,10 @@ async function adicionarTag(lancamentoId, nomeTag) {
             console.warn('Essa tag já estava nesse lançamento.');
             return { data: null, error: null };
         }
+
         console.error(error);
-        return { data: null, error: error};
+        return { data: null, error: error };
     }
 
-    return { data: data, error: null }
-}}
-
-const { data, error } = await fazerLogin(usuario, senha);
-if (error) {
-    // mostra a mensagem de erro na tela
+    return { data: data, error: null };
 }
